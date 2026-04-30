@@ -19,6 +19,7 @@ const port = 3060;
 app.use("*", cors());
 app.use(express.json());
 
+
 // Logger middleware
 const logger = require('./logger');
 app.use(pinoHttp({ logger }));
