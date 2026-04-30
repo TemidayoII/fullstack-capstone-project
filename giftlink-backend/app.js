@@ -1,61 +1,69 @@
 /*jshint esversion: 8 */
 require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const pinoLogger = require('./logger');
+const pinoHttp = require('pino-http');
 
 const connectToDatabase = require('./models/db');
 const { loadData } = require("./util/import-mongo/index");
 
+// =====================
+// INIT APP
+// =====================
 const app = express();
-app.use("*", cors());
 const port = 3060;
 
-// Connect to MongoDB
+// Middleware
+app.use("*", cors());
+app.use(express.json());
+
+// Logger middleware
+const logger = require('./logger');
+app.use(pinoHttp({ logger }));
+
+// =====================
+// DATABASE CONNECTION
+// =====================
 connectToDatabase()
     .then(() => {
         pinoLogger.info('Connected to DB');
     })
     .catch((e) => console.error('Failed to connect to DB', e));
 
-app.use(express.json());
-
 // =====================
 // ROUTE IMPORTS
 // =====================
-
-// Gift API Task 1
 const giftRoutes = require('./routes/giftRoutes');
-
-// Search API Task 1
-// (only if your project includes searchRoutes)
 const searchRoutes = require('./routes/searchRoutes');
-
-const pinoHttp = require('pino-http');
-const logger = require('./logger');
-
-app.use(pinoHttp({ logger }));
+const authRoutes = require('./routes/authRoutes');
 
 // =====================
 // ROUTE USAGE
 // =====================
-
-// Gift API Task 2
 app.use('/api/gifts', giftRoutes);
-
-// Search API Task 2
 app.use('/api/search', searchRoutes);
+app.use('/api/auth', authRoutes);
 
-// Global Error Handler
+// =====================
+// ROOT ROUTE
+// =====================
+app.get("/", (req, res) => {
+    res.send("Inside the server");
+});
+
+// =====================
+// GLOBAL ERROR HANDLER
+// =====================
 app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).send('Internal Server Error');
 });
 
-app.get("/", (req, res) => {
-    res.send("Inside the server");
-});
-
+// =====================
+// START SERVER
+// =====================
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
