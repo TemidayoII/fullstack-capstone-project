@@ -1,3 +1,4 @@
+/*jshint esversion: 8 */
 const express = require('express');
 const router = express.Router();
 const connectToDatabase = require('../models/db');
@@ -34,7 +35,7 @@ router.get('/:id', async (req, res, next) => {
     }
 });
 
-// (optional if required later)
+// POST NEW GIFT
 router.post('/', async (req, res, next) => {
     try {
         const db = await connectToDatabase();
